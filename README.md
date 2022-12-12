@@ -1,7 +1,9 @@
-# Vue 3 + Vite
+# 一些晴朗的日子
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+实际上，每年都会拍出几张回看时自觉欣喜的照片。当然，很显然我是个极业余的摄影人，没有专业的设备，构图、饱和度、曝光等等也通通随缘。只欣喜于，**每回看这些图像，身心仿佛回到当时，这是一种很奇妙、温馨的感受**。
 
-## Recommended IDE Setup
+但由于时间与地域的关系，这些照片往往要么丢失，要么被随意塞在网盘的某处。于是，现在 _（2022-11-28）_ 我决心花一些精力把它们维护起来。但是，正如前面所言，原图已不易寻觅，目前所得的一些图片大多来自微信朋友圈或微博，很遗憾图片质量已损失太多。
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+而这些图片拍时多是好天气，所以干脆统称这些照片为 **「一些晴朗的日子」**。
+    
+图片目前采用 **Github + <a target="_blank" class="link" href="https://vercel.com/">Vercel</a>** 来托管，感谢这个伟大的时代。

@@ -2,7 +2,6 @@
   <main>
     <article>
       <div class="preface">
-        <h1>一些晴朗的日子</h1>
         <p>
           实际上，每年都会拍出几张回看时自觉欣喜的照片。
           当然，很显然我是个极业余的摄影人，没有专业的设备，构图、饱和度、曝光等等也通通随缘。
@@ -14,9 +13,13 @@
           但是，正如前面所言，原图已不易寻觅，目前所得的一些图片大多来自微信朋友圈或微博，很遗憾图片质量已损失太多。
         </p>
         <p>而这些图片拍时多是好天气，所以干脆统称这些照片为<strong>「一些晴朗的日子」</strong>。</p>
-        <p>图片目前采用 <strong>Github + <a target="_blank" class="link"
-              href="https://vercel.com/">Vercel</a></strong> 来托管，感谢这个伟大的时代。</p>
-
+        <p>
+          图片目前采用
+          <strong>
+            Github + <a target="_blank" class="link" href="https://vercel.com/">Vercel</a>
+          </strong>
+          来托管，感谢这个伟大的时代。
+        </p>
       </div>
       <ImageCard class="cell" v-for="img, index in images" :key="index" v-bind="img"
         @click="openDetail(index)" />
@@ -37,8 +40,9 @@
 
 <script setup>
 import {
-  nextTick, onMounted, reactive, ref, watchEffect,} from 'vue';
-import { useEventListener } from '@vueuse/core'
+  nextTick, onMounted, reactive, ref, watchEffect,
+} from 'vue';
+import { useEventListener } from '@vueuse/core';
 import ImageCard from './ImageCard.vue';
 import ImageDetail from './ImageDetail.vue';
 
