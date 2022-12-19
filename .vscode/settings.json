@@ -1,3 +1,6 @@
 {
-  "editor.defaultFormatter": "Vue.volar"
+  "editor.defaultFormatter": "Vue.volar",
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
 }
