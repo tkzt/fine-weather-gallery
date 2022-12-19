@@ -3,21 +3,27 @@
     <Transition mode="out-in">
       <Suspense>
         <template #default>
-          <ImageAsync :src="src" @mouseenter="cover = true" />
+          <ImageAsync :src="src" @mouseenter="mask = true" />
         </template>
         <template #fallback>
           <canvas class="skeleton" ref="skeletonRef" width="32" height="32"></canvas>
         </template>
       </Suspense>
     </Transition>
-    <div class="cover" v-if="cover" @mouseleave="cover = false">
+    <div class="mask" v-if="mask" @mouseleave="mask = false">
       <div class="meta">
-        <h3>{{ title }}</h3>
-        <p class="time-location">
-          <span v-if="location"><i class="fas fa-map-marker-alt"></i>{{ location }}</span>
-          <span v-if="year"><i class="fas fa-clock"></i>{{ year }}</span>
-        </p>
-        <p class="description">{{ description }}</p>
+          <h3>{{ title }}</h3>
+          <p>
+            <span v-if="location">
+              <i class="fas fa-map-marker-alt"></i>
+              {{ location }}
+            </span>
+            <span v-if="year">
+              <i class="fas fa-clock"></i>
+              {{ year }}
+            </span>
+          </p>
+          <p>{{ description }}</p>
       </div>
     </div>
   </div>
@@ -43,7 +49,7 @@ const props = defineProps({
   },
 });
 const skeletonRef = ref(null);
-const cover = ref(false);
+const mask = ref(false);
 
 onMounted(() => {
   const originSize = props.blurHash.size;
@@ -70,15 +76,9 @@ onMounted(() => {
   transform: scale(1.03);
 }
 
-.container>img {
+.container > img {
   width: 100%;
   display: block;
-}
-
-@keyframes loading {
-  to {
-    background-position-x: -20%;
-  }
 }
 
 .skeleton {
@@ -86,16 +86,15 @@ onMounted(() => {
   border-radius: 8px;
 }
 
-.cover {
+.mask {
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   box-sizing: border-box;
   position: absolute;
-  background-image: radial-gradient(rgba(0, 0, 0, 0) 0%,
-      rgba(0, 0, 0, 0.5) 100%),
-    radial-gradient(rgba(0, 0, 0, 0) 33%, rgba(0, 0, 0, 0.3) 166%);
+  background: radial-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.5) 100%),
+              radial-gradient(rgba(0, 0, 0, 0) 33%, rgba(0, 0, 0, 0.3) 166%);
   display: flex;
   padding: 12px;
   align-items: flex-end;
@@ -117,30 +116,29 @@ onMounted(() => {
 }
 
 .meta p:nth-of-type(1) {
-  margin-bottom: 6px;
+  margin-top: 8px;
   font-size: .5rem;
 }
 
 .meta p:nth-of-type(2) {
-  margin: 0;
   overflow: hidden;
   font-size: .8rem;
 }
 
-.meta p:nth-last-child(1) {
+.meta p:nth-of-type(2):not(:empty){
+  margin-top: 8px;
+}
+
+.meta p:nth-of-type(2) {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.time-location {
-  margin: 24px 0;
-}
-
-.time-location>span:nth-child(1) {
+.meta p:nth-of-type(1) > span:nth-child(1) {
   margin-right: 12px;
 }
 
-.time-location>span>i {
+.meta p:nth-of-type(1) > span > i {
   margin-right: 6px;
 }
 </style>

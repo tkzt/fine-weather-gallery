@@ -7,7 +7,7 @@
         </p>
         <p>
           但由于时间与地域的关系，这些照片往往要么丢失，要么被随意塞在网盘的某处。
-          于是，现在 <em class="caption">（2022-11-28）</em> 我决心花一些精力把它们维护起来。
+          于是，现在 <em class="caption">(2022-11-28)</em> 我决心花一些精力把它们维护起来。
           然而，正如前面所言，原图已不易寻觅，目前所得的一些图片大多来自微信朋友圈或微博，很遗憾图片质量已损失太多。
         </p>
         <p>而这些图片拍时多是好天气，所以干脆统称这些照片为<strong>「一些晴朗的日子」</strong>。</p>
@@ -412,7 +412,6 @@ article {
   padding: 24px;
   column-count: 1;
   column-gap: 24px;
-  display: inline-block;
 }
 
 .caption {
@@ -469,7 +468,6 @@ article {
 
 .cell {
   break-inside: avoid;
-  width: 100%;
   margin-bottom: 24px;
 }
 

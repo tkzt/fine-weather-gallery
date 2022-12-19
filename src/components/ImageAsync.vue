@@ -3,14 +3,16 @@
 </template>
 
 <script setup>
+import { unref } from 'vue';
+
 const props = defineProps({
   src: String,
 });
 
-// to make sure each image will be loaded just once
+// using another `img` element instead of directly fetching the `src`
+// is in order to make sure only one request will be sent.
 const img = new Image();
-// eslint-disable-next-line vue/no-setup-props-destructure
-img.src = props.src;
+img.src = unref(props.src);
 await new Promise((resolve) => {
   img.onload = () => {
     resolve();
