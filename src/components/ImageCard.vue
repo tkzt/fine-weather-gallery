@@ -117,7 +117,7 @@ onMounted(() => {
 
 .meta p:nth-of-type(1) {
   margin-top: 8px;
-  font-size: .5rem;
+  font-size: small;
 }
 
 .meta p:nth-of-type(2) {

@@ -120,7 +120,7 @@ article {
 }
 
 .caption {
-  font-size: xx-small;
+  font-size: x-small;
   color: rgba(0, 0, 0, .27);
 }
 
