@@ -41,7 +41,7 @@
       :leave-active-class="metaLeaveActiveClass">
       <div class="
         box-border shrink-0 lg:w-30% pa-8 backdrop-blur-40 saturate-200
-        bg-[rgba(255,255,255,.6)] c-[rgba(0,0,0,.85)] animate-duration-170
+        bg-[rgba(255,255,255,.6)] c-[rgba(0,0,0,.85)] important-animate-duration-170
       " v-if="!folded">
         <div class="fw-bold text-3xl lg:text-4xl">{{ imgMeta.title || '无题' }}</div>
         <div class="mt-6 flex lg:text-lg">
