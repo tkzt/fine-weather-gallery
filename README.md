@@ -10,4 +10,4 @@
 
 而这些图片拍时多是好天气，所以干脆统称这些照片为 **「一些晴朗的日子」**。
     
-图片目前采用 **Github + <a target="_blank" class="link" href="https://vercel.com/">Vercel</a>** 来托管，感谢这个伟大的时代。
+图片目前采用 **GitHub + <a target="_blank" class="link" href="https://vercel.com/">Vercel</a>** 来托管，感谢这个伟大的时代。
