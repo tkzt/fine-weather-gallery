@@ -123,6 +123,8 @@ const folded = ref(false);
 </script>
 
 <style scoped>
+@import url('animate.css');
+
 .btn {
   --at-apply: pa-2 rd-50% cursor-pointer backdrop-blur-20 saturate-180 lg:pa-3;
   --at-apply: "c-[rgba(255,255,255,.85)] bg-[rgba(145,116,155,.6)]";

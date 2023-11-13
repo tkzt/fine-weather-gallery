@@ -3,3 +3,15 @@ body {
   --at-apply: bg-#f2f3f8;
   --at-apply: "dark:bg-#131130";
 }
+
+:root {
+  --er-primary-light: #4c1d9525;
+  --er-primary: #4c1d9545;
+  --er-primary-dark: #4c1d9562;
+}
+
+html.dark {
+  --er-primary-light: rgba(109, 40, 217);
+  --er-primary-dark: rgba(76, 29, 149);
+  --er-primary: rgba(91, 33, 182);
+}

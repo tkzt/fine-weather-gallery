@@ -37,55 +37,64 @@
       <ImageCard class="mb-4" v-for="img, index in images" :key="index" v-bind="img"
         @click="openDetail(index)" />
     </div>
-    <div class="flex my-18 justify-center select-none text-xs">
+    <div class="flex my-18 items-center flex-col select-none text-xs">
+      <div v-if="avReady">
+        <emoji-reaction :reactor="reactor" :react="react" :unreact="unreact"
+          :getReactions="getReactions" :dark="isDark" />
+      </div>
+      <div class="text-gray-400 mb-3 mt-2.5">
+        {{ images.length }}<span class="mx-.5">/</span>{{
+          Object.keys(imagesInfoMap || {}).length - 1
+        }}
+      </div>
       <div v-if="loadingImages" class="flex items-center">
-        Loading
         <i class="
-          i-mdi-loading animate-iteration-infinite block ml-2
+          i-mdi-loading animate-iteration-infinite block
           animate-spin c-gray-600 dark:c-gray-200
         " />
       </div>
       <div class="
         c-gray-600 dark:c-gray-200 cursor-pointer
-        rd-2 py-1 px-2 hover:bg-#4c1d9525 active:bg-#4c1d9545
-        dark:c-gray-200 dark:hover:bg-violet-900 dark:active:bg-violet-800
+        rd-2 py-1 px-2 simple-btn
       " @click="currentPage += 1" v-else-if="hasMore">
         More
       </div>
       <div class="c-gray-600 dark:c-gray-200 py-1" v-else>
-        No More :/
+        No More
       </div>
     </div>
-    <footer class="flex items-center justify-between">
+    <footer class="flex flex-col items-center">
       <div class="text-xl c-slate-800 flex items-center">
         <div class="
           backdrop-blur-2 saturate-120%
-          bg-#4c1d9525 pa-1 rd-50% mr-2 cursor-pointer
-          hover:bg-#4c1d9545 active:bg-#4c1d9562
-          dark:bg-violet-900 dark:c-gray-200 dark:hover:bg-violet-800 dark:active:bg-violet-700
+         pa-1 rd-50% mr-2 cursor-pointer
+          simple-btn
         " @click="isDark = !isDark">
           <div class="i-mdi-white-balance-sunny"></div>
         </div>
         <div class="
           backdrop-blur-2 saturate-120%
-          bg-#4c1d9525 pa-1 rd-50% cursor-pointer
-          hover:bg-#4c1d9545 active:bg-#4c1d9562
-          dark:bg-violet-900 dark:c-gray-200 dark:hover:bg-violet-800 dark:active:bg-violet-700
+           pa-1 rd-50% cursor-pointer
+          simple-btn
         " @click="jumpTo('https://github.com/tkzt/fine-weather-gallery')">
           <div class="i-mdi-github"></div>
         </div>
       </div>
 
-      <div class="text-xs c-gray-600 dark:c-gray-200">
-        <span>&copy; {{ new Date().getFullYear() }}</span>
-        <span class="
-          ml-2 inline-flex c-gray-600 items-center cursor-pointer b-1 b-solid b-transparent
-          hover:b-b-gray-600
-          dark:c-gray-200 dark:hover:b-b-gray-200
-        " @click="jumpTo('https://tkzt.cn')">
-          <span>Allen Tao</span>
-          <i class="i-mdi-open-in-new ml-1"></i>
-        </span>
+      <div class="text-xs c-gray-600 dark:c-gray-200 mt-3">
+        <div class="text-center">
+          <span>&copy; {{ new Date().getFullYear() }}</span>
+          <span class="
+            ml-2 inline-flex c-gray-600 items-center cursor-pointer b-1 b-solid b-transparent
+            hover:b-b-gray-600
+            dark:c-gray-200 dark:hover:b-b-gray-200
+          " @click="jumpTo('https://tkzt.cn')">
+            <span>Allen Tao</span>
+            <i class="i-mdi-open-in-new ml-1"></i>
+          </span>
+        </div>
+        <div class="text-gray-400 mt-1">Last updated at {{ imagesInfoMap?.version?.update_time }}
+        </div>
       </div>
     </footer>
     <ImageDetail v-model="imageDetailModel" v-bind="imageDetails"
@@ -109,10 +118,13 @@ import {
 } from 'vue';
 import { useDark, useEventListener } from '@vueuse/core';
 import AV from 'leancloud-storage';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
+import { EmojiReaction } from 'emoji-reaction';
 import ImageCard from './ImageCard.vue';
 import ImageDetail from './ImageDetail.vue';
 
 const PAGE_SIZE = 20;
+const AV_OBJECT_NAME = 'FineWeatherGalleryReaction';
 
 const isDark = useDark();
 const images = ref([]);
@@ -122,6 +134,8 @@ const loadingImages = ref(false);
 const folded = ref(false);
 const hasMore = ref(true);
 const currentPage = ref(0);
+const reactor = ref('');
+const avReady = ref(false);
 const imageDetails = reactive({
   imgMeta: {
     title: '',
@@ -137,6 +151,51 @@ const imageDetails = reactive({
   current: -1,
   total: 0,
 });
+
+const fpPromise = FingerprintJS.load();
+(async () => {
+  const fp = await fpPromise;
+  const result = await fp.get();
+  reactor.value = result.visitorId;
+})();
+
+async function react(reaction) {
+  const reactionObj = new AV.Object(AV_OBJECT_NAME);
+  reactionObj.set('reaction', reaction);
+  reactionObj.set('reactor', reactor.value);
+  return reactionObj.save();
+}
+
+async function unreact(reaction) {
+  const query = new AV.Query(AV_OBJECT_NAME);
+  return query.equalTo('reaction', reaction).equalTo('reactor', reactor.value).destroyAll();
+}
+
+async function getReactions() {
+  try {
+    const query = new AV.Query(AV_OBJECT_NAME);
+    return query.find().then((records) => records.reduce((pre, curr) => {
+      const { reaction, reactor: _reactor } = curr.toJSON();
+      const existedReaction = pre.find((p) => p.reaction === reaction);
+      if (existedReaction) {
+        if (!existedReaction.reactors.includes(_reactor)) {
+          existedReaction.reactors.push(_reactor);
+        }
+      } else {
+        pre.push({
+          reaction,
+          reactors: [_reactor],
+        });
+      }
+      return pre;
+    }, []));
+  } catch (err) {
+    // mostly, 404 error occurs
+    // eslint-disable-next-line no-console
+    console.error(err);
+    return new Promise((resolve) => { resolve([]); });
+  }
+}
 
 function jumpTo(url) {
   const a = document.createElement('a');
@@ -212,6 +271,8 @@ onMounted(async () => {
 
   // register keypress event
   useEventListener(document, 'keydown', keypressListener);
+
+  avReady.value = true;
 });
 
 watchEffect(async () => {
@@ -230,6 +291,11 @@ watchEffect(() => {
 </script>
 
 <style scoped>
+.simple-btn {
+  --at-apply: hover:bg-#4c1d9545 active:bg-#4c1d9562 bg-#4c1d9525;
+  --at-apply: dark:bg-violet-900 dark:c-gray-200 dark:hover:bg-violet-800 dark:active:bg-violet-700;
+}
+
 .dots {
   background: url("data:image/svg+xml;utf8, <svg width='16' height='16' fill='none' xmlns='http://www.w3.org/2000/svg'><rect fill='rgba(25, 33, 38, 0.2)' x='7' y='7' width='2' height='2'></rect></svg>") fixed;
 }

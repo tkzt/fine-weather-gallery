@@ -5,8 +5,9 @@
   " ref="containerRef">
     <Suspense>
       <template #default>
-        <ImageAsync :src="imgSrc" class="w-100% block"
-          :style="{ minHeight: minImageHeight + 'px' }" />
+        <ImageAsync :src="imgSrc" class="
+            w-100% block  dark:bg-[rgba(0,0,0,.2)] bg-[rgba(0,0,0,.1)]
+            backdrop-blur-4 saturate-120" :style="{ minHeight: minImageHeight + 'px' }" />
       </template>
       <template #fallback>
         <canvas class="w-100% rd-2 block" ref="skeletonRef" width="32" height="32"></canvas>
