@@ -2,10 +2,11 @@
   <div class="
     cursor-pointer relative overflow-hidden rd-2 transition-170
     hover:scale-103
-  ">
+  " ref="containerRef">
     <Suspense>
       <template #default>
-        <ImageAsync :src="imgSrc" class="w-100% block" />
+        <ImageAsync :src="imgSrc" class="w-100% block"
+          :style="{ minHeight: minImageHeight + 'px' }" />
       </template>
       <template #fallback>
         <canvas class="w-100% rd-2 block" ref="skeletonRef" width="32" height="32"></canvas>
@@ -53,8 +54,15 @@ const props = defineProps({
   },
 });
 const skeletonRef = ref(null);
+const containerRef = ref();
+
 const imgSrc = computed(
   () => `${import.meta.env.VITE_IMG_FETCH_PREFIX + import.meta.env.VITE_IMG_NAME_PREFIX}thumbnail/${props.src}`,
+);
+const minImageHeight = computed(
+  () => Math.floor(
+    (containerRef.value?.offsetWidth || 0) * (props.blurHash.size[1] / props.blurHash.size[0]),
+  ),
 );
 
 onMounted(() => {
