@@ -11,25 +11,15 @@
         rd-2 pa-4 box-border mb-4 c-slate-800 text-justify lh-6 tracking-.5 text-0px
       " :class="{ 'flex items-center justify-between': folded }">
         <template v-if="!folded">
-          <span class="text-sm">由于有若干个能拍照的设备，再加上时间会公平地杀死一切，我每年都会拍出几张回看时感慨万千的照片。</span>
-          <span class="text-sm">但由于时间与地域的关系，这些照片往往要么丢失，要么被随意塞在网盘的某处。</span>
-          <span class="text-sm">于是，<span class="
-            relative before:w-100% before:h-.2rem before:bg-violet-300
-            before:content-[''] before:absolute before:bottom--.1rem
-            dark:before:bg-violet-500
-          " title="2022-11-28">现在</span>我决心花一些精力把它们维护起来。</span>
-          <span class="text-sm">然而，正如前面所言，原图已不易寻觅，目前所得的一些图片大多来自微信朋友圈或微博，很遗憾图片质量已损失太多。</span>
-          <span class="text-sm">而这些图片拍时多是好天气，所以干脆统称这些照片为<strong>「一些晴朗的日子」</strong>。</span>
+          <div class="text-sm">{{ INTRO }}</div>
         </template>
-        <strong class="text-1rem" v-else>「一些晴朗的日子」</strong>
+        <strong class="text-1rem" v-else>{{ TITLE }}</strong>
         <div class="
-          backdrop-blur-2 saturate-120%
-          bg-#4c1d9525
-          pa-1 rd-50% mr-2 cursor-pointer
+          backdrop-blur-2 saturate-120% bg-#4c1d9525 pa-1 rd-50% cursor-pointer
           hover:bg-#4c1d9545 active:bg-#4c1d9562
           dark:bg-violet-900 dark:c-gray-200 dark:hover:bg-violet-800 dark:active:bg-violet-700
         " :class="{
-          'absolute bottom-.5rem right-.5rem': !folded
+          'absolute bottom-2 right-2': !folded
         }" @click="folded = !folded">
           <div class="text-xl" :class="folded ? 'i-mdi-chevron-down' : 'i-mdi-chevron-up'"></div>
         </div>
@@ -38,14 +28,12 @@
         @click="openDetail(index)" />
     </div>
     <div class="flex my-18 items-center flex-col select-none text-xs">
-      <div v-if="avReady">
+      <div v-if="isReady">
         <emoji-reaction :reactor="reactor" :react="react" :unreact="unreact"
           :getReactions="getReactions" :dark="isDark" />
       </div>
       <div class="text-gray-400 mb-3 mt-2.5">
-        {{ images.length }}<span class="mx-.5">/</span>{{
-          Object.keys(imagesInfoMap || {}).length - 1
-        }}
+        {{ images.length }}<span class="mx-.5">/</span>{{ imagesEntire.length }}
       </div>
       <div v-if="loadingImages" class="flex items-center">
         <i class="
@@ -56,7 +44,7 @@
       <div class="
         c-gray-600 dark:c-gray-200 cursor-pointer
         rd-2 py-1 px-2 simple-btn
-      " @click="currentPage += 1" v-else-if="hasMore">
+      " @click="loadMore" v-else-if="imagesEntire.length > loaded">
         More
       </div>
       <div class="c-gray-600 dark:c-gray-200 py-1" v-else>
@@ -67,14 +55,14 @@
       <div class="text-xl c-slate-800 flex items-center">
         <div class="
           backdrop-blur-2 saturate-120%
-         pa-1 rd-50% mr-2 cursor-pointer
+          pa-1 rd-50% mr-2 cursor-pointer
           simple-btn
         " @click="isDark = !isDark">
           <div class="i-mdi-white-balance-sunny"></div>
         </div>
         <div class="
           backdrop-blur-2 saturate-120%
-           pa-1 rd-50% cursor-pointer
+          pa-1 rd-50% cursor-pointer
           simple-btn
         " @click="jumpTo('https://github.com/tkzt/fine-weather-gallery')">
           <div class="i-mdi-github"></div>
@@ -93,7 +81,8 @@
             <i class="i-mdi-open-in-new ml-1"></i>
           </span>
         </div>
-        <div class="text-gray-400 mt-1">Last updated at {{ imagesInfoMap?.version?.update_time }}
+        <div class="text-gray-400 mt-1">Last updated at {{
+          imagesEntire.at(-1)?.updateAt || new Date().toLocaleString() }}
         </div>
       </div>
     </footer>
@@ -117,25 +106,28 @@ import {
   onMounted, reactive, ref, watchEffect,
 } from 'vue';
 import { useDark, useEventListener } from '@vueuse/core';
-import AV from 'leancloud-storage';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
+import { createClient } from '@supabase/supabase-js';
 import { EmojiReaction } from 'emoji-reaction';
 import ImageCard from './ImageCard.vue';
 import ImageDetail from './ImageDetail.vue';
+import imagesEntire from '../assets/images.json';
 
 const PAGE_SIZE = 20;
-const AV_OBJECT_NAME = 'FineWeatherGalleryReaction';
+const TITLE = '「一些晴朗的日子」';
+const INTRO = `由于有若干个能拍照的设备，再加上时间会公平地杀死一切，我每年都会拍出几张回看时感慨万千的照片。但由于时间与地域的关系，这些照片往往要么丢失，要么被随意塞在网盘的某处。于是，现在（2022-11-28）我决心花一些精力把它们维护起来。然而，正如前面所言，原图已不易寻觅，目前所得的一些图片大多来自微信朋友圈或微博，很遗憾图片质量已损失太多。而这些图片拍时多是好天气，所以干脆统称这些照片为${TITLE}。`;
+
+const SUPABASE_URL = 'https://cn1k1ka5g6h58d3qort0.baseapi.memfiredb.com';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImV4cCI6MzI4NDA5NDkyOSwiaWF0IjoxNzA3Mjk0OTI5LCJpc3MiOiJzdXBhYmFzZSJ9.J3LRysizveBsrp5O5epNlgkMeMOwpvdi7RLB6Yfowpg';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const isDark = useDark();
-const images = ref([]);
-const imagesInfoMap = ref(null);
 const imageDetailModel = ref(false);
 const loadingImages = ref(false);
 const folded = ref(false);
-const hasMore = ref(true);
-const currentPage = ref(0);
 const reactor = ref('');
-const avReady = ref(false);
+const isReady = ref(false);
+const loaded = ref(0);
 const imageDetails = reactive({
   imgMeta: {
     title: '',
@@ -151,6 +143,7 @@ const imageDetails = reactive({
   current: -1,
   total: 0,
 });
+const images = ref([]);
 
 const fpPromise = FingerprintJS.load();
 (async () => {
@@ -160,41 +153,37 @@ const fpPromise = FingerprintJS.load();
 })();
 
 async function react(reaction) {
-  const reactionObj = new AV.Object(AV_OBJECT_NAME);
-  reactionObj.set('reaction', reaction);
-  reactionObj.set('reactor', reactor.value);
-  return reactionObj.save();
+  await supabase
+    .from('fine-weather')
+    .insert([
+      { reactor: reactor.value, reaction },
+    ]);
 }
 
 async function unreact(reaction) {
-  const query = new AV.Query(AV_OBJECT_NAME);
-  return query.equalTo('reaction', reaction).equalTo('reactor', reactor.value).destroyAll();
+  await supabase
+    .from('fine-weather')
+    .delete()
+    .eq('reactor', reactor.value)
+    .eq('reaction', reaction);
 }
 
 async function getReactions() {
-  try {
-    const query = new AV.Query(AV_OBJECT_NAME);
-    return query.find().then((records) => records.reduce((pre, curr) => {
-      const { reaction, reactor: _reactor } = curr.toJSON();
-      const existedReaction = pre.find((p) => p.reaction === reaction);
-      if (existedReaction) {
-        if (!existedReaction.reactors.includes(_reactor)) {
-          existedReaction.reactors.push(_reactor);
-        }
-      } else {
-        pre.push({
-          reaction,
-          reactors: [_reactor],
-        });
+  const { data } = await supabase.from('fine-weather').select('reactor, reaction');
+  return data?.reduce((pre, curr) => {
+    const indexExists = pre.findIndex((p) => p.reaction === curr.reaction);
+    if (indexExists > -1) {
+      if (!pre[indexExists].reactors.includes(curr.reactor)) {
+        pre[indexExists].reactors.push(curr.reactor);
       }
-      return pre;
-    }, []));
-  } catch (err) {
-    // mostly, 404 error occurs
-    // eslint-disable-next-line no-console
-    console.error(err);
-    return new Promise((resolve) => { resolve([]); });
-  }
+    } else {
+      pre.push({
+        reaction: curr.reaction,
+        reactors: [curr.reactor],
+      });
+    }
+    return pre;
+  }, []);
 }
 
 function jumpTo(url) {
@@ -205,8 +194,9 @@ function jumpTo(url) {
 }
 
 function openDetail(index) {
-  imageDetails.current = index;
   imageDetails.imgMeta = images.value[index];
+  imageDetails.current = index;
+  imageDetails.total = images.value.length;
   imageDetailModel.value = true;
 }
 
@@ -222,63 +212,16 @@ function keypressListener(ev) {
   }
 }
 
-async function init() {
-  // lc
-  AV.init({
-    appId: import.meta.env.VITE_LC_APP_ID,
-    appKey: import.meta.env.VITE_LC_APP_KEY,
-    serverURL: import.meta.env.VITE_LC_SERVER_URL,
-  });
-
-  // info map
-  imagesInfoMap.value = await (await fetch(`${import.meta.env.VITE_IMG_FETCH_PREFIX + import.meta.env.VITE_IMG_NAME_PREFIX}images.json`, {
-    method: 'GET',
-    mode: 'cors',
-  })).json();
+function loadMore() {
+  const delta = imagesEntire.slice(loaded.value, loaded.value + PAGE_SIZE);
+  images.value.push(...delta);
+  loaded.value += delta.length;
 }
 
-async function loadImages(page = 0) {
-  loadingImages.value = true;
-  const query = new AV.Query('Image');
-  query.limit(PAGE_SIZE).skip(page * PAGE_SIZE);
-
-  const response = (await query.find());
-  const appendImages = response.filter(
-    (r) => images.value.every((i) => i.src !== r.attributes.name),
-  ).map((r) => {
-    const { attributes } = r;
-    const info = imagesInfoMap.value[import.meta.env.VITE_IMG_NAME_PREFIX + attributes.name];
-
-    return {
-      ...attributes,
-      src: attributes.name,
-      blurHash: {
-        size: info.size,
-        encoded: info.hash,
-      },
-    };
-  });
-
-  images.value.push(...appendImages);
-  imageDetails.total = images.value.length;
-  loadingImages.value = false;
-
-  return appendImages.length === PAGE_SIZE;
-}
-
-onMounted(async () => {
-  await init();
-
-  // register keypress event
+onMounted(() => {
   useEventListener(document, 'keydown', keypressListener);
-
-  avReady.value = true;
-});
-
-watchEffect(async () => {
-  if (imagesInfoMap.value && hasMore.value) {
-    hasMore.value = await loadImages(currentPage.value);
-  }
+  loadMore();
+  isReady.value = true;
 });
 
 watchEffect(() => {

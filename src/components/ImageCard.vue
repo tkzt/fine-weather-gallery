@@ -58,7 +58,7 @@ const skeletonRef = ref(null);
 const containerRef = ref();
 
 const imgSrc = computed(
-  () => `${import.meta.env.VITE_IMG_FETCH_PREFIX + import.meta.env.VITE_IMG_NAME_PREFIX}thumbnail/${props.src}`,
+  () => `/thumbnail/${props.src}`,
 );
 const minImageHeight = computed(
   () => Math.floor(

@@ -93,7 +93,7 @@ const skeletonRef = ref(null);
 
 const { width: windowWidth } = useWindowSize();
 const imgSrc = computed(
-  () => `${import.meta.env.VITE_IMG_FETCH_PREFIX + import.meta.env.VITE_IMG_NAME_PREFIX}${props.imgMeta.src}`,
+  () => props.imgMeta.src,
 );
 
 watchEffect(() => {

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^4.1.0",
+    "@supabase/supabase-js": "^2.39.6",
     "@vueuse/core": "^9.6.0",
     "animate.css": "^4.1.1",
     "blurhash": "^2.0.4",
