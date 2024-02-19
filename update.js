@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import sharp from 'sharp';
 import { encode } from 'blurhash';
 import fs from 'node:fs';
@@ -23,22 +24,29 @@ async function genHash(src) {
     hash,
     size: {
       height,
-      width
-    }
+      width,
+    },
   };
 }
 
 async function update() {
   const images = JSON.parse(fs.readFileSync(IMAGES_PATH).toString());
-  for (const image of images.filter(i => !fs.existsSync(`${THUMBNAILS_PATH}/${i.src}`))) {
+  await Promise.all(images.filter((i) => !fs.existsSync(`${THUMBNAILS_PATH}/${i.src}`)).map(async (image, index) => {
+    console.info(`Handling the ${index + 1} image...`);
     const { hash, size: { width, height } } = await genHash(`public/${image.src}`);
-    image.blurHash = {
-      encoded: hash,
-      size: [width, height]
-    };
-    image.updateAt = new Date().toLocaleString();
-  }
+    Object.assign(images[index], {
+      blurHash: {
+        encoded: hash,
+        size: [width, height],
+      },
+      updateAt: new Date().toLocaleString(),
+    });
+  }));
+  console.info('Done.');
+
+  console.info('Updating `images.json`...');
   fs.writeFileSync(IMAGES_PATH, JSON.stringify(images), 'utf8');
+  console.info('Done.');
 }
 
 (async () => {

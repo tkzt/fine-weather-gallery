@@ -17,7 +17,8 @@
     "blurhash": "^2.0.5",
     "emoji-reaction": "^2.1.1",
     "leancloud-storage": "^4.15.2",
-    "vue": "^3.4.19"
+    "vue": "^3.4.19",
+    "sharp": "^0.33.2"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.1.64",
@@ -28,7 +29,6 @@
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-vue": "^9.21.1",
-    "sharp": "^0.33.2",
     "unocss": "^0.53.6",
     "vite": "^4.5.2"
   }
