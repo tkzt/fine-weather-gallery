@@ -34,7 +34,7 @@ async function update() {
   await Promise.all(images.filter((i) => !fs.existsSync(`${THUMBNAILS_PATH}/${i.src}`)).map(async (image, index) => {
     console.info(`Handling the ${index + 1} image...`);
     const { hash, size: { width, height } } = await genHash(`public/${image.src}`);
-    Object.assign(images[index], {
+    Object.assign(image, {
       blurHash: {
         encoded: hash,
         size: [width, height],
