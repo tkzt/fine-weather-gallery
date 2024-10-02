@@ -4,7 +4,7 @@
     <div class="
       columns-1 sm:columns-2 md:columns-3 xl:columns-4 2xl:columns-5
       gap-x-4
-    ">
+    " :key="rerenderKey">
       <div class="
         bg-#4c1d9525 backdrop-blur-2 saturate-120%
         dark:bg-violet-950 dark:c-gray-200 break-inside-avoid
@@ -103,9 +103,10 @@
 
 <script setup>
 import {
+  computed,
   onMounted, reactive, ref, watchEffect,
 } from 'vue';
-import { useDark, useEventListener } from '@vueuse/core';
+import { useDark, useEventListener, useWindowSize } from '@vueuse/core';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { createClient } from '@supabase/supabase-js';
 import { EmojiReaction } from 'emoji-reaction';
@@ -144,6 +145,8 @@ const imageDetails = reactive({
   total: 0,
 });
 const images = ref([]);
+const { width, height } = useWindowSize();
+const rerenderKey = computed(() => `${width.value}-${height.value}`);
 
 const fpPromise = FingerprintJS.load();
 (async () => {
