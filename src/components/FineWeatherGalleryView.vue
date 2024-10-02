@@ -88,7 +88,7 @@
     </footer>
     <ImageDetail v-model="imageDetailModel" v-bind="imageDetails"
       @lastImage="openDetail(imageDetails.current - 1)"
-      @nextImage="openDetail(imageDetails.current + 1)" />
+      @nextImage="openDetail(imageDetails.current + 1)" :total="imagesEntire.length" />
     <div class="
       fixed h-100vh w-100vw flex items-center justify-center top-0 left-0
       bg-[rgba(47,14,59,0.62)] backdrop-blur-20 saturate-120
@@ -193,7 +193,16 @@ function jumpTo(url) {
   a.click();
 }
 
+function loadMore() {
+  const delta = imagesEntire.slice(loaded.value, loaded.value + PAGE_SIZE);
+  images.value.push(...delta);
+  loaded.value += delta.length;
+}
+
 function openDetail(index) {
+  if (index >= images.value.length && index < imagesEntire.length) {
+    loadMore();
+  }
   imageDetails.imgMeta = images.value[index];
   imageDetails.current = index;
   imageDetails.total = images.value.length;
@@ -206,16 +215,10 @@ function keypressListener(ev) {
       imageDetailModel.value = false;
     } else if (ev.key === 'ArrowLeft' && imageDetails.current > 0) {
       openDetail(imageDetails.current - 1);
-    } else if (ev.key === 'ArrowRight' && imageDetails.current < imageDetails.total - 1) {
+    } else if (ev.key === 'ArrowRight' && imageDetails.current < imagesEntire.length - 1) {
       openDetail(imageDetails.current + 1);
     }
   }
-}
-
-function loadMore() {
-  const delta = imagesEntire.slice(loaded.value, loaded.value + PAGE_SIZE);
-  images.value.push(...delta);
-  loaded.value += delta.length;
 }
 
 onMounted(() => {
