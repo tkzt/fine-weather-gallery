@@ -11,3 +11,22 @@
 而这些图片拍时多是好天气，所以干脆统称这些照片为 **「一些晴朗的日子」**。
     
 图片目前采用 **GitHub + <a target="_blank" class="link" href="https://vercel.com/">Vercel</a>** 来托管，感谢这个伟大的时代。
+
+## Getting Started
+
+1. 添加照片到 `public/` 目录下
+2. 修改 `src/assets/images.json` 文件，添加照片的基础信息，比如：
+    ```json
+    {
+        "title": "公共艺术一",
+        "desc": "",
+        "location": "泗阳，江苏",
+        "src": "ggys1.jpg",
+        "year": "2024"
+    }
+    ```
+3. 生成缩略图及 `blurhash`：
+    ```bash
+    pnpm img-update
+    ```
+4. 提交改动，触发 `GitHub Pages` 自动部署

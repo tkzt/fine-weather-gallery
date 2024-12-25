@@ -11,14 +11,13 @@
   },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^4.2.2",
-    "@supabase/supabase-js": "^2.39.6",
     "@vueuse/core": "^9.13.0",
     "animate.css": "^4.1.1",
     "blurhash": "^2.0.5",
     "emoji-reaction": "^2.1.1",
-    "leancloud-storage": "^4.15.2",
-    "vue": "^3.4.19",
-    "sharp": "^0.33.2"
+    "optional": "^0.1.4",
+    "sharp": "^0.33.2",
+    "vue": "^3.4.19"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.1.64",

@@ -55,17 +55,29 @@
       <div class="text-xl c-slate-800 flex items-center">
         <div class="
           backdrop-blur-2 saturate-120%
-          pa-1 rd-50% mr-2 cursor-pointer
+          pa-1 rd-50% cursor-pointer
           simple-btn
         " @click="isDark = !isDark">
-          <div class="i-mdi-white-balance-sunny"></div>
+          <div :class="!isDark ? 'i-mdi:weather-night' : 'i-mdi:weather-sunny'"></div>
+        </div>
+        <div class="
+          backdrop-blur-2 saturate-120%
+          pa-1 rd-50% cursor-pointer mx-2
+          simple-btn
+        " @click="jumpTo('https://github.com/tkzt/fine-weather-gallery')">
+          <div class="i-mdi-github"></div>
         </div>
         <div class="
           backdrop-blur-2 saturate-120%
           pa-1 rd-50% cursor-pointer
           simple-btn
-        " @click="jumpTo('https://github.com/tkzt/fine-weather-gallery')">
-          <div class="i-mdi-github"></div>
+        " @click="updateOrdering">
+          <div :class="ordering === 'random' ?
+            'i-mdi-sort-clock-ascending' :
+            ordering === 'asc' ?
+              'i-mdi-sort-clock-descending' : 'i-mdi-shuffle'
+            ">
+          </div>
         </div>
       </div>
 
@@ -106,22 +118,23 @@ import {
   computed,
   onMounted, reactive, ref, watchEffect,
 } from 'vue';
-import { useDark, useEventListener, useWindowSize } from '@vueuse/core';
+import {
+  useDark, useEventListener, useWindowSize, useLocalStorage,
+} from '@vueuse/core';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
-import { createClient } from '@supabase/supabase-js';
 import { EmojiReaction } from 'emoji-reaction';
 import ImageCard from './ImageCard.vue';
 import ImageDetail from './ImageDetail.vue';
-import imagesEntire from '../assets/images.json';
+import imagesEntireRaw from '../assets/images.json';
 
 const PAGE_SIZE = 20;
 const TITLE = '「一些晴朗的日子」';
 const INTRO = `由于有若干个能拍照的设备，再加上时间会公平地杀死一切，我每年都会拍出几张回看时感慨万千的照片。但由于时间与地域的关系，这些照片往往要么丢失，要么被随意塞在网盘的某处。于是，现在（2022-11-28）我决心花一些精力把它们维护起来。然而，正如前面所言，原图已不易寻觅，目前所得的一些图片大多来自微信朋友圈或微博，很遗憾图片质量已损失太多。而这些图片拍时多是好天气，所以干脆统称这些照片为${TITLE}。`;
+const emojiReactionKey = 'fine-weather.tkzt.cn';
+const apiBase = import.meta.env.VITE_API_BASE;
+const emojiReactions = ref([]);
 
-const SUPABASE_URL = 'https://cn1k1ka5g6h58d3qort0.baseapi.memfiredb.com';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImV4cCI6MzI4NDA5NDkyOSwiaWF0IjoxNzA3Mjk0OTI5LCJpc3MiOiJzdXBhYmFzZSJ9.J3LRysizveBsrp5O5epNlgkMeMOwpvdi7RLB6Yfowpg';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+const ordering = useLocalStorage('fw-ordering', 'asc'); // 'asc' or 'desc' or 'random'
 const isDark = useDark();
 const imageDetailModel = ref(false);
 const loadingImages = ref(false);
@@ -147,6 +160,15 @@ const imageDetails = reactive({
 const images = ref([]);
 const { width, height } = useWindowSize();
 const rerenderKey = computed(() => `${width.value}-${height.value}`);
+const imagesEntire = computed(
+  () => imagesEntireRaw.sort((a, b) => {
+    const aTime = new Date(a.updateAt).getTime();
+    const bTime = new Date(b.updateAt).getTime();
+    if (ordering.value === 'asc') return aTime - bTime;
+    if (ordering.value === 'desc') return bTime - aTime;
+    return Math.random() - 0.5;
+  }),
+);
 
 const fpPromise = FingerprintJS.load();
 (async () => {
@@ -155,38 +177,44 @@ const fpPromise = FingerprintJS.load();
   reactor.value = result.visitorId;
 })();
 
-async function react(reaction) {
-  await supabase
-    .from('fine-weather')
-    .insert([
-      { reactor: reactor.value, reaction },
-    ]);
+function updateOrdering() {
+  if (ordering.value === 'asc') {
+    ordering.value = 'desc';
+  } else if (ordering.value === 'desc') {
+    ordering.value = 'random';
+  } else {
+    ordering.value = 'asc';
+  }
+  window.location.reload();
 }
 
-async function unreact(reaction) {
-  await supabase
-    .from('fine-weather')
-    .delete()
-    .eq('reactor', reactor.value)
-    .eq('reaction', reaction);
+function react(reaction) {
+  return fetch(`${apiBase}/reactions`, { method: 'post', body: JSON.stringify({ reaction, reactor: reactor.value, objective: emojiReactionKey }), headers: { 'Content-Type': 'application/json' } });
+}
+
+function unreact(reaction) {
+  const theReaction = emojiReactions.value.find(
+    (r) => r.reaction === reaction && r.reactor === reactor.value,
+  );
+  if (!theReaction) return;
+  fetch(`${apiBase}/reactions/${theReaction.id}`, { method: 'delete' });
 }
 
 async function getReactions() {
-  const { data } = await supabase.from('fine-weather').select('reactor, reaction');
-  return data?.reduce((pre, curr) => {
-    const indexExists = pre.findIndex((p) => p.reaction === curr.reaction);
-    if (indexExists > -1) {
-      if (!pre[indexExists].reactors.includes(curr.reactor)) {
-        pre[indexExists].reactors.push(curr.reactor);
-      }
-    } else {
-      pre.push({
-        reaction: curr.reaction,
-        reactors: [curr.reactor],
-      });
-    }
-    return pre;
-  }, []);
+  const { data } = await (
+    await fetch(`${apiBase}/reactions?objective=${emojiReactionKey}`, { method: 'get' })
+  ).json();
+  let reactions = data || [];
+  emojiReactions.value = reactions;
+
+  reactions = Object.entries(reactions.reduce((acc, cur) => {
+    if (!acc[cur.reaction]) acc[cur.reaction] = [];
+    acc[cur.reaction].push(cur.reactor);
+    return acc;
+  }, {})).map(([reaction, reactors]) => ({
+    reaction, reactors,
+  }));
+  return reactions;
 }
 
 function jumpTo(url) {
@@ -197,13 +225,13 @@ function jumpTo(url) {
 }
 
 function loadMore() {
-  const delta = imagesEntire.slice(loaded.value, loaded.value + PAGE_SIZE);
+  const delta = imagesEntire.value.slice(loaded.value, loaded.value + PAGE_SIZE);
   images.value.push(...delta);
   loaded.value += delta.length;
 }
 
 function openDetail(index) {
-  if (index >= images.value.length && index < imagesEntire.length) {
+  if (index >= images.value.length && index < imagesEntire.value.length) {
     loadMore();
   }
   imageDetails.imgMeta = images.value[index];
@@ -218,7 +246,7 @@ function keypressListener(ev) {
       imageDetailModel.value = false;
     } else if (ev.key === 'ArrowLeft' && imageDetails.current > 0) {
       openDetail(imageDetails.current - 1);
-    } else if (ev.key === 'ArrowRight' && imageDetails.current < imagesEntire.length - 1) {
+    } else if (ev.key === 'ArrowRight' && imageDetails.current < imagesEntire.value.length - 1) {
       openDetail(imageDetails.current + 1);
     }
   }
