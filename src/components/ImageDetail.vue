@@ -31,12 +31,22 @@
             <ImageAsync :src="imgSrc" class="w-100% h-100% block object-contain" />
           </template>
           <template #fallback>
-            <canvas class="w-100% h-100% block object-contain" ref="skeletonRef" width="32"
-              height="32"></canvas>
+            <div class="reactive h-100% w-100%">
+              <canvas class="w-100% h-100% block object-contain" ref="skeletonRef" width="32"
+                height="32">
+              </canvas>
+              <div class='
+                h-1.37 w-15% overflow-hidden absolute top-50% left-50%
+                translate-x--50% translate-y--50% rounded
+              '>
+                <div class='progress w-full h-full bg-[rgba(255,255,255,0.3)] left-right'></div>
+              </div>
+            </div>
           </template>
         </Suspense>
       </div>
     </div>
+
     <Transition :enter-active-class="metaEnterActiveClass"
       :leave-active-class="metaLeaveActiveClass">
       <div class="
@@ -99,8 +109,11 @@ const imgSrc = computed(
 watchEffect(() => {
   if (props.modelValue && skeletonRef.value) {
     const originSize = props.imgMeta.blurHash.size;
-    skeletonRef.value.height = Math.floor((originSize[1] / originSize[0]) * 32);
-
+    if (originSize[0] >= originSize[1]) {
+      skeletonRef.value.height = Math.floor((originSize[1] / originSize[0]) * 32);
+    } else {
+      skeletonRef.value.width = Math.floor((originSize[0] / originSize[1]) * 32);
+    }
     const pixels = decode(props.imgMeta.blurHash.encoded, 32, 32);
     const ctx = skeletonRef.value.getContext('2d');
     const imageData = ctx.createImageData(32, 32);
@@ -133,5 +146,27 @@ const folded = ref(false);
 
 .btn i {
   --at-apply: block text-xl;
+}
+
+.progress {
+  animation: progress .7s infinite linear;
+}
+
+.left-right {
+  transform-origin: 0% 50%;
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(0) scaleX(0);
+  }
+
+  37% {
+    transform: translateX(0) scaleX(0.4);
+  }
+
+  100% {
+    transform: translateX(100%) scaleX(0.15);
+  }
 }
 </style>
