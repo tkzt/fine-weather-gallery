@@ -36,8 +36,8 @@
                 height="32">
               </canvas>
               <div class='
-                h-1.37 w-15% overflow-hidden absolute top-50% left-50%
-                translate-x--50% translate-y--50% rounded
+                h-.75 w-6.2rem overflow-hidden absolute top-50% left-50%
+                translate-x--50% translate-y--50%
               '>
                 <div class='progress w-full h-full bg-[rgba(255,255,255,0.3)] left-right'></div>
               </div>
@@ -162,7 +162,11 @@ const folded = ref(false);
   }
 
   37% {
-    transform: translateX(0) scaleX(0.4);
+    transform: translateX(0) scaleX(0.62);
+  }
+
+  62% {
+    transform: translateX(75%) scaleX(0.37);
   }
 
   100% {
