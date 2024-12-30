@@ -63,11 +63,6 @@ const cardSize = ref([0, 0]);
 const imgSrc = computed(
   () => `/thumbnail/${props.src}`,
 );
-// const minImageHeight = computed(
-//   () => Math.floor(
-//     (containerRef.value?.offsetWidth || 0) * (props.blurHash.size[1] / props.blurHash.size[0]),
-//   ),
-// );
 
 onMounted(() => {
   const originSize = props.blurHash.size;

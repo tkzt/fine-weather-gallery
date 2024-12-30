@@ -225,9 +225,11 @@ function jumpTo(url) {
 }
 
 function loadMore() {
+  loadingImages.value = true;
   const delta = imagesEntire.value.slice(loaded.value, loaded.value + PAGE_SIZE);
   images.value.push(...delta);
   loaded.value += delta.length;
+  loadingImages.value = false;
 }
 
 function openDetail(index) {

@@ -4,7 +4,6 @@
 
 <script setup>
 import { ref, unref } from 'vue';
-import { useIntervalFn } from '@vueuse/core';
 
 const props = defineProps({
   src: String,
@@ -31,16 +30,7 @@ const img = new Image();
 img.src = unref(props.src);
 await new Promise((resolve) => {
   img.onload = () => {
-    const { pause } = useIntervalFn(() => {
-      if (img.complete) {
-        // converts buffer to base64
-        srcBase64.value = imgToBase64(img);
-
-        // call it a day
-        pause();
-        resolve();
-      }
-    }, 50);
+    srcBase64.value = imgToBase64(img);
     resolve();
   };
 });
