@@ -14,8 +14,9 @@
 
 ## Getting Started
 
-1. 添加照片到 `public/` 目录下
-2. 修改 `src/assets/images.json` 文件，添加照片的基础信息，比如：
+1. 安装依赖 `pnpm i`
+2. 添加照片到 `public/` 目录下
+3. 修改 `src/assets/images.json` 文件，添加照片的基础信息，比如：
     ```json
     {
         "title": "公共艺术一",
@@ -25,8 +26,5 @@
         "year": "2024"
     }
     ```
-3. 生成缩略图及 `blurhash`：
-    ```bash
-    pnpm img-update
-    ```
-4. 提交改动，触发 `GitHub Pages` 自动部署
+4. 提交改动，触发 `husky` pre-commit，生成缩略图及 `blurhash`
+5. 推送改动，触发 `GitHub Pages` 自动部署

@@ -31,7 +31,9 @@ async function genHash(src) {
 
 async function update() {
   const images = JSON.parse(fs.readFileSync(IMAGES_PATH).toString());
+  let hasUpdate = false;
   await Promise.all(images.filter((i) => !fs.existsSync(`${THUMBNAILS_PATH}/${i.src}`)).map(async (image, index) => {
+    hasUpdate ||= true;
     console.info(`Handling the ${index + 1} image...`);
     const { hash, size: { width, height } } = await genHash(`public/${image.src}`);
     Object.assign(image, {
@@ -44,14 +46,19 @@ async function update() {
   }));
   console.info('Done.');
 
-  console.info('Updating `images.json`...');
-  fs.writeFileSync(IMAGES_PATH, JSON.stringify(images), 'utf8');
-  console.info('Done.');
+  if (hasUpdate) {
+    console.info('Updating `images.json`...');
+    fs.writeFileSync(IMAGES_PATH, JSON.stringify(images), 'utf8');
+    console.info('Done.');
+  }
+
+  return hasUpdate;
 }
 
 (async () => {
   if (!fs.existsSync(THUMBNAILS_PATH)) {
     fs.mkdirSync(THUMBNAILS_PATH);
   }
-  await update();
+  const hasUpdate = await update();
+  process.exit(hasUpdate ? 1 : 0); // once updated, exit with code 1 to break the committing
 })();
