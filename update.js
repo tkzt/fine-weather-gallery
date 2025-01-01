@@ -60,5 +60,9 @@ async function update() {
     fs.mkdirSync(THUMBNAILS_PATH);
   }
   const hasUpdate = await update();
-  process.exit(hasUpdate ? 1 : 0); // once updated, exit with code 1 to break the committing
+  // once updated, exit with code 1 to break the committing process
+  if (hasUpdate) {
+    console.info('Image info updates! Please commit the changes to `images.json` and the thumbnails.');
+    process.exit(1);
+  }
 })();
