@@ -14,7 +14,7 @@
 
 ## Getting Started
 
-1. 安装依赖 `pnpm i`
+1. `pnpm i` & `pnpm prepare`
 2. 添加照片到 `public/` 目录下
 3. 修改 `src/assets/images.json` 文件，添加照片的基础信息，比如：
     ```json
