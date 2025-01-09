@@ -149,7 +149,8 @@ const folded = ref(false);
 }
 
 .progress {
-  animation: progress .7s infinite linear;
+  transform: translateX(-100%);
+  animation: progress .8s -.1s ease-in-out infinite;
 }
 
 .left-right {
@@ -158,19 +159,11 @@ const folded = ref(false);
 
 @keyframes progress {
   0% {
-    transform: translateX(0) scaleX(0);
-  }
-
-  37% {
-    transform: translateX(0) scaleX(0.62);
-  }
-
-  62% {
-    transform: translateX(75%) scaleX(0.37);
+    transform: translateX(-100%);
   }
 
   100% {
-    transform: translateX(100%) scaleX(0.15);
+    transform: translateX(100%);
   }
 }
 </style>
