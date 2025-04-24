@@ -2,7 +2,7 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import UnoCSS from 'unocss/vite';
-import { presetUno, presetIcons } from 'unocss';
+import { presetUno, presetIcons, transformerVariantGroup } from 'unocss';
 import { resolve } from 'path';
 import transformerDirectives from '@unocss/transformer-directives';
 
@@ -10,7 +10,7 @@ import transformerDirectives from '@unocss/transformer-directives';
 export default defineConfig({
   plugins: [vue(), UnoCSS({
     presets: [presetIcons(), presetUno()],
-    transformers: [transformerDirectives()],
+    transformers: [transformerDirectives(), transformerVariantGroup()],
   })],
   resolve: {
     alias: {

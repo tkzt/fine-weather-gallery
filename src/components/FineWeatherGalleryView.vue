@@ -5,25 +5,6 @@
       columns-1 sm:columns-2 md:columns-3 xl:columns-4 2xl:columns-5
       gap-x-4
     " :key="rerenderKey">
-      <div class="
-        bg-#4c1d9525 backdrop-blur-2 saturate-120%
-        dark:bg-violet-950 dark:c-gray-200 break-inside-avoid
-        rd-2 pa-4 box-border mb-4 c-slate-800 text-justify lh-6 tracking-.5 text-0px
-      " :class="{ 'flex items-center justify-between': folded }">
-        <template v-if="!folded">
-          <div class="text-sm">{{ INTRO }}</div>
-        </template>
-        <strong class="text-1rem" v-else>{{ TITLE }}</strong>
-        <div class="
-          backdrop-blur-2 saturate-120% bg-#4c1d9525 pa-1 rd-50% cursor-pointer
-          hover:bg-#4c1d9545 active:bg-#4c1d9562
-          dark:bg-violet-900 dark:c-gray-200 dark:hover:bg-violet-800 dark:active:bg-violet-700
-        " :class="{
-          'absolute bottom-2 right-2': !folded
-        }" @click="folded = !folded">
-          <div class="text-xl" :class="folded ? 'i-mdi-chevron-down' : 'i-mdi-chevron-up'"></div>
-        </div>
-      </div>
       <ImageCard class="mb-4" v-for="img, index in images" :key="index" v-bind="img"
         @click="openDetail(index)" />
     </div>
@@ -52,32 +33,34 @@
       </div>
     </div>
     <footer class="flex flex-col items-center">
-      <div class="text-xl c-slate-800 flex items-center">
-        <div class="
-          backdrop-blur-2 saturate-120%
-          pa-1 rd-50% cursor-pointer
-          simple-btn
-        " @click="isDark = !isDark">
+      <div class="text-xl c-slate-800 flex items-center gap2">
+        <div class="footer-btn simple-btn" @click="isDark = !isDark">
           <div :class="!isDark ? 'i-mdi:weather-night' : 'i-mdi:weather-sunny'"></div>
         </div>
-        <div class="
-          backdrop-blur-2 saturate-120%
-          pa-1 rd-50% cursor-pointer mx-2
-          simple-btn
-        " @click="jumpTo('https://github.com/tkzt/fine-weather-gallery')">
+        <div class="footer-btn simple-btn"
+          @click="jumpTo('https://github.com/tkzt/fine-weather-gallery')">
           <div class="i-mdi-github"></div>
         </div>
-        <div class="
-          backdrop-blur-2 saturate-120%
-          pa-1 rd-50% cursor-pointer
-          simple-btn
-        " @click="updateOrdering">
+        <div class="footer-btn simple-btn" @click="updateOrdering">
           <div :class="ordering === 'random' ?
             'i-mdi-sort-clock-ascending' :
             ordering === 'asc' ?
               'i-mdi-sort-clock-descending' : 'i-mdi-shuffle'
             ">
           </div>
+        </div>
+        <div class="footer-btn simple-btn relative" ref="introRef" v-if="width > 640">
+          <Transition>
+            <div v-if="isIntroBtnHover" class="
+                bg-white text-gray-800 text-justify absolute lh-150%
+                bottom-110% p2 rounded-lg text-xs w-62 shadow-lg
+                dark:(bg-gray-800 text-gray-200 shadow-gray-900)
+            ">
+              {{
+                INTRO
+              }}</div>
+          </Transition>
+          <div class="i-mdi:information-outline"></div>
         </div>
       </div>
 
@@ -119,7 +102,7 @@ import {
   onMounted, reactive, ref, watchEffect,
 } from 'vue';
 import {
-  useDark, useEventListener, useWindowSize, useLocalStorage,
+  useDark, useEventListener, useWindowSize, useLocalStorage, useElementHover,
 } from '@vueuse/core';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { EmojiReaction } from 'emoji-reaction';
@@ -128,8 +111,7 @@ import ImageDetail from './ImageDetail.vue';
 import imagesEntireRaw from '../assets/images.json';
 
 const PAGE_SIZE = 20;
-const TITLE = '「一些晴朗的日子」';
-const INTRO = `由于有若干个能拍照的设备，再加上时间会公平地杀死一切，我每年都会拍出几张回看时感慨万千的照片。但由于时间与地域的关系，这些照片往往要么丢失，要么被随意塞在网盘的某处。于是，现在（2022-11-28）我决心花一些精力把它们维护起来。然而，正如前面所言，原图已不易寻觅，目前所得的一些图片大多来自微信朋友圈或微博，很遗憾图片质量已损失太多。而这些图片拍时多是好天气，所以干脆统称这些照片为${TITLE}。`;
+const INTRO = '由于有若干个能拍照的设备，再加上时间会公平地杀死一切，我每年都会拍出几张回看时感慨万千的照片。但由于时间与地域的关系，这些照片往往要么丢失，要么被随意塞在网盘的某处。于是，现在（2022-11-28）我决心花一些精力把它们维护起来。然而，正如前面所言，原图已不易寻觅，目前所得的一些图片大多来自微信朋友圈或微博，很遗憾图片质量已损失太多。而这些图片拍时多是好天气，所以干脆统称这些照片为「一些晴朗的日子」。';
 const emojiReactionKey = 'fw';
 const apiBase = import.meta.env.VITE_API_BASE;
 const emojiReactions = ref([]);
@@ -138,10 +120,11 @@ const ordering = useLocalStorage('fw-ordering', 'asc'); // 'asc' or 'desc' or 'r
 const isDark = useDark();
 const imageDetailModel = ref(false);
 const loadingImages = ref(false);
-const folded = ref(false);
 const reactor = ref('');
 const isReady = ref(false);
 const loaded = ref(0);
+const introRef = ref();
+
 const imageDetails = reactive({
   imgMeta: {
     title: '',
@@ -159,6 +142,7 @@ const imageDetails = reactive({
 });
 const images = ref([]);
 const { width, height } = useWindowSize();
+const isIntroBtnHover = useElementHover(introRef);
 const rerenderKey = computed(() => `${width.value}-${height.value}`);
 const imagesEntire = computed(
   () => imagesEntireRaw.sort((a, b) => {
@@ -277,6 +261,10 @@ watchEffect(() => {
 .simple-btn {
   --at-apply: hover:bg-#4c1d9545 active:bg-#4c1d9562 bg-#4c1d9525;
   --at-apply: dark:bg-violet-900 dark:c-gray-200 dark:hover:bg-violet-800 dark:active:bg-violet-700;
+}
+
+.footer-btn {
+  --at-apply: backdrop-blur-2 saturate-120% pa-1 rd-50% cursor-pointer;
 }
 
 .dots {
