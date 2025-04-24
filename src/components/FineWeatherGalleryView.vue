@@ -130,7 +130,7 @@ import imagesEntireRaw from '../assets/images.json';
 const PAGE_SIZE = 20;
 const TITLE = '「一些晴朗的日子」';
 const INTRO = `由于有若干个能拍照的设备，再加上时间会公平地杀死一切，我每年都会拍出几张回看时感慨万千的照片。但由于时间与地域的关系，这些照片往往要么丢失，要么被随意塞在网盘的某处。于是，现在（2022-11-28）我决心花一些精力把它们维护起来。然而，正如前面所言，原图已不易寻觅，目前所得的一些图片大多来自微信朋友圈或微博，很遗憾图片质量已损失太多。而这些图片拍时多是好天气，所以干脆统称这些照片为${TITLE}。`;
-const emojiReactionKey = 'fine-weather.tkzt.cn';
+const emojiReactionKey = 'fw';
 const apiBase = import.meta.env.VITE_API_BASE;
 const emojiReactions = ref([]);
 
@@ -189,31 +189,35 @@ function updateOrdering() {
 }
 
 function react(reaction) {
-  return fetch(`${apiBase}/reactions`, { method: 'post', body: JSON.stringify({ reaction, reactor: reactor.value, objective: emojiReactionKey }), headers: { 'Content-Type': 'application/json' } });
+  return fetch(`${apiBase}/reactions`, {
+    method: 'post',
+    body: JSON.stringify({
+      reaction: `${emojiReactionKey}-${reaction}`,
+      reactor: reactor.value,
+    }),
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
 function unreact(reaction) {
   const theReaction = emojiReactions.value.find(
-    (r) => r.reaction === reaction && r.reactor === reactor.value,
+    (r) => r.reaction === reaction && r.reactors.includes(reactor.value),
   );
   if (!theReaction) return;
-  fetch(`${apiBase}/reactions/${theReaction.id}`, { method: 'delete' });
+  fetch(`${apiBase}/reactions`, {
+    method: 'delete',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      reaction: `${emojiReactionKey}-${reaction}`,
+      reactor: reactor.value,
+    }),
+  });
 }
 
 async function getReactions() {
-  const { data } = await (
-    await fetch(`${apiBase}/reactions?objective=${emojiReactionKey}`, { method: 'get' })
-  ).json();
-  let reactions = data || [];
+  const data = await (await fetch(`${apiBase}/reactions?prefix=${emojiReactionKey}`, { method: 'get' })).json();
+  const reactions = data || [];
   emojiReactions.value = reactions;
-
-  reactions = Object.entries(reactions.reduce((acc, cur) => {
-    if (!acc[cur.reaction]) acc[cur.reaction] = [];
-    acc[cur.reaction].push(cur.reactor);
-    return acc;
-  }, {})).map(([reaction, reactors]) => ({
-    reaction, reactors,
-  }));
   return reactions;
 }
 
