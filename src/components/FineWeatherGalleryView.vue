@@ -35,7 +35,7 @@
     <footer class="flex flex-col items-center">
       <div class="text-xl c-slate-800 flex items-center gap2">
         <div class="footer-btn simple-btn" @click="isDark = !isDark">
-          <div :class="!isDark ? 'i-mdi:weather-night' : 'i-mdi:weather-sunny'"></div>
+          <div :class="isDark ? 'i-mdi:weather-night' : 'i-mdi:weather-sunny'"></div>
         </div>
         <div class="footer-btn simple-btn"
           @click="jumpTo('https://github.com/tkzt/fine-weather-gallery')">
@@ -43,9 +43,9 @@
         </div>
         <div class="footer-btn simple-btn" @click="updateOrdering">
           <div :class="ordering === 'random' ?
-            'i-mdi-sort-clock-ascending' :
+            'i-mdi-shuffle' :
             ordering === 'asc' ?
-              'i-mdi-sort-clock-descending' : 'i-mdi-shuffle'
+              'i-mdi-sort-clock-ascending' : 'i-mdi-sort-clock-descending'
             ">
           </div>
         </div>
