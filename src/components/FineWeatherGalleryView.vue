@@ -176,8 +176,9 @@ function react(reaction) {
   return fetch(`${apiBase}/reactions`, {
     method: 'post',
     body: JSON.stringify({
-      reaction: `${emojiReactionKey}-${reaction}`,
+      reaction,
       reactor: reactor.value,
+      symbol: emojiReactionKey,
     }),
     headers: { 'Content-Type': 'application/json' },
   });
@@ -192,14 +193,15 @@ function unreact(reaction) {
     method: 'delete',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      reaction: `${emojiReactionKey}-${reaction}`,
+      reaction,
       reactor: reactor.value,
+      symbol: emojiReactionKey,
     }),
   });
 }
 
 async function getReactions() {
-  const data = await (await fetch(`${apiBase}/reactions?prefix=${emojiReactionKey}`, { method: 'get' })).json();
+  const data = await (await fetch(`${apiBase}/reactions?symbol=${emojiReactionKey}`, { method: 'get' })).json();
   const reactions = data || [];
   emojiReactions.value = reactions;
   return reactions;
