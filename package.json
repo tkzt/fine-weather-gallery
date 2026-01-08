@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "prepare": "husky"
   },
-  "dependencies": {
+  "devDependencies": {
     "@fingerprintjs/fingerprintjs": "^4.2.2",
     "@vueuse/core": "^9.13.0",
     "animate.css": "^4.1.1",
@@ -18,9 +18,7 @@
     "emoji-reaction": "^2.1.1",
     "optional": "^0.1.4",
     "sharp": "^0.33.2",
-    "vue": "^3.4.19"
-  },
-  "devDependencies": {
+    "vue": "^3.4.19",
     "@iconify-json/mdi": "^1.1.64",
     "@unocss/transformer-directives": "^0.53.6",
     "@vitejs/plugin-vue": "^4.6.2",
@@ -31,10 +29,12 @@
     "eslint-plugin-vue": "^9.21.1",
     "husky": "^9.1.7",
     "lint-staged": "^15.3.0",
+    "oxfmt": "^0.23.0",
+    "oxlint": "^1.38.0",
     "unocss": "^0.53.6",
     "vite": "^4.5.2"
   },
   "lint-staged": {
-    "*.js": "eslint --cache --fix"
+    "*.js": "pnpx oxlint fix"
   }
 }
