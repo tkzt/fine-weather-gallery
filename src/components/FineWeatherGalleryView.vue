@@ -11,7 +11,7 @@
     <div class="flex my-18 items-center flex-col select-none text-xs">
       <div v-if="isReady">
         <emoji-reaction :reactor="reactor" :react="react" :unreact="unreact"
-          :getReactions="getReactions" :dark="isDark" />
+          :getReactions="getReactions" :dark="isDark" :emojis="emojis" />
       </div>
       <div class="text-gray-400 mb-3 mt-2.5">
         {{ images.length }}<span class="mx-.5">/</span>{{ imagesEntire.length }}
@@ -124,6 +124,7 @@ const reactor = ref('');
 const isReady = ref(false);
 const loaded = ref(0);
 const introRef = ref();
+const emojis = ['👍', '🎉', '❤️', '🚀', '👀', '🤯', '😕', '😏', '🙃', '😄', '🔥', '🌈', '📸', '💖'];
 
 const imageDetails = reactive({
   imgMeta: {
