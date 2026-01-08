@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "prepare": "husky"
+    "prepare": "husky && echo \"pnpm img-update\" >> .husky/pre-commit"
   },
   "devDependencies": {
     "@fingerprintjs/fingerprintjs": "^4.2.2",
