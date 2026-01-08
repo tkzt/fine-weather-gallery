@@ -76,9 +76,7 @@
             <i class="i-mdi-open-in-new ml-1"></i>
           </span>
         </div>
-        <div class="text-gray-400 mt-1">Last updated at {{
-          imagesEntire.at(-1)?.updateAt || new Date().toLocaleString() }}
-        </div>
+        <div class="text-gray-400 mt-1">Last updated at {{ lastUpdatedAt }}</div>
       </div>
     </footer>
     <ImageDetail v-model="imageDetailModel" v-bind="imageDetails"
@@ -144,6 +142,7 @@ const imageDetails = reactive({
 const images = ref([]);
 const { width, height } = useWindowSize();
 const isIntroBtnHover = useElementHover(introRef);
+const lastUpdatedAt = imagesEntireRaw.at(-1)?.updateAt || 'last time 🤷‍♂️';
 const rerenderKey = computed(() => `${width.value}-${height.value}`);
 const imagesEntire = computed(
   () => imagesEntireRaw.sort((a, b) => {
@@ -154,6 +153,7 @@ const imagesEntire = computed(
     return Math.random() - 0.5;
   }),
 );
+
 
 const fpPromise = FingerprintJS.load();
 (async () => {
