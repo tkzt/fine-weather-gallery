@@ -1,6 +1,6 @@
 <template>
   <div class="
-    cursor-pointer relative overflow-hidden rd-2 transition-170
+    cursor-pointer relative overflow-hidden rd transition-170
     hover:scale-103
   " ref="containerRef" :style="{ minHeight: cardSize[1] + 'px', minWidth: cardSize[0] + 'px' }">
     <Suspense>
@@ -10,7 +10,7 @@
             backdrop-blur-4 saturate-120" />
       </template>
       <template #fallback>
-        <canvas class="w-100% rd-2 block" ref="skeletonRef" width="32" height="32"></canvas>
+        <canvas class="w-100% rd block" ref="skeletonRef" width="32" height="32"></canvas>
       </template>
     </Suspense>
     <div class="
